@@ -1,0 +1,40 @@
+# PDS and tool-generated output
+compile/
+constraint_check/
+device_map/
+generate_bitstream/
+log/
+logbackup/
+place_route/
+report_timing/
+synthesize/
+tmp/
+sim_*/
+*.adf
+*.cmr
+*.db
+*.dmr
+*.pvf
+*.prt
+*.prr
+*.rtr
+*.snr
+*.vm
+*.wf
+*.wlf
+*.sbit
+*.sfc
+*.log
+run.log
+stdout.log
+stderr.log
+transcript
+
+# Local/editor files
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+
+# Historical team documentation is intentionally outside this independent repo
+a技术文档/
