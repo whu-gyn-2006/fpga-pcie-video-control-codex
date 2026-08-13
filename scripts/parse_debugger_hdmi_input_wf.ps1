@@ -4,7 +4,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $bytes = [System.IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $Path))
-$ficWidth = 31
+$ficWidth = 7
 $rawWidth = $ficWidth + 1
 $totalBits = [UInt64]($bytes.Length * 8)
 if (($totalBits % [UInt64]$rawWidth) -ne 0) {
@@ -31,27 +31,15 @@ function Get-Value([int]$sample, [int]$lsb, [int]$width) {
     return $value
 }
 
-$rstHigh = 0
-$initHigh = 0
-$deSeenHigh = 0
-$vsSeenHigh = 0
+$names = @('r_hdmi_de_d1 seen','video_crtl DE seen','video_crtl VS seen','frame_done seen','AXIS valid seen','AXIS ready seen','AXIS last seen')
+$high = New-Object int[] $ficWidth
 $states = @{}
 $commands = @{}
 $pixValues = New-Object System.Collections.Generic.HashSet[UInt64]
 $lastSample = $sampleCount - 1
 
 for ($sample = 0; $sample -lt $sampleCount; $sample++) {
-    $rstHigh += Get-Channel $sample 0
-    $initHigh += Get-Channel $sample 1
-    $state = Get-Value $sample 2 7
-    $command = Get-Value $sample 9 9
-    $null = $pixValues.Add((Get-Value $sample 21 8))
-    if (!$states.ContainsKey($state)) { $states[$state] = 0 }
-    if (!$commands.ContainsKey($command)) { $commands[$command] = 0 }
-    $states[$state]++
-    $commands[$command]++
-    $deSeenHigh += Get-Channel $sample 29
-    $vsSeenHigh += Get-Channel $sample 30
+    for ($channel = 0; $channel -lt $ficWidth; $channel++) { $high[$channel] += Get-Channel $sample $channel }
 }
 
 $stateNames = @{
@@ -66,30 +54,10 @@ $commandText = ($commands.GetEnumerator() | Sort-Object Name | ForEach-Object {
     "{0}={1}" -f [int]$_.Name, $_.Value
 }) -join ", "
 
-$freqBitsLast = Get-Value $lastSample 19 2
-$pixFirst = Get-Value 0 21 8
-$pixLast = Get-Value $lastSample 21 8
-
 Write-Host "Decoded $sampleCount samples, FIC=$ficWidth bits, raw=$rawWidth bits"
-Write-Host ("rstn_out: high={0}/{1}" -f $rstHigh, $sampleCount)
-Write-Host ("MS7200 init_over: high={0}/{1}" -f $initHigh, $sampleCount)
-Write-Host ("MS7200 states: {0}" -f $stateText)
-Write-Host ("MS7200 cmd_index: {0}" -f $commandText)
-Write-Host ("MS7200 freq_ensure(last)={0}, freq_rec[17:16](last)=0b{1}" -f `
-    (Get-Channel $lastSample 18), [Convert]::ToString([int]$freqBitsLast, 2).PadLeft(2, '0'))
-Write-Host ("pixclk counter: first=0x{0:x2}, last=0x{1:x2}, distinct={2}" -f `
-    $pixFirst, $pixLast, $pixValues.Count)
-Write-Host ("DE seen: high={0}/{1}, VS seen: high={2}/{1}" -f `
-    $deSeenHigh, $sampleCount, $vsSeenHigh)
-
-if ($rstHigh -eq 0) {
-    Write-Host "RESULT: HDMI receiver reset was never released."
-} elseif ($initHigh -eq 0) {
-    Write-Host "RESULT: MS7200 initialization did not complete; inspect state/cmd_index and I2C."
-} elseif ($pixValues.Count -le 1) {
-    Write-Host "RESULT: MS7200 initialized, but no pixel-clock activity reached the FPGA input."
-} elseif ($deSeenHigh -eq 0 -or $vsSeenHigh -eq 0) {
-    Write-Host "RESULT: Pixel clock is active, but DE/VS did not both appear at the FPGA input."
-} else {
-    Write-Host "RESULT: MS7200 init and pixel/DE/VS input activity are present; continue after the input boundary."
-}
+for ($channel = 0; $channel -lt $ficWidth; $channel++) { Write-Host ("{0}: high={1}/{2}" -f $names[$channel],$high[$channel],$sampleCount) }
+if ($high[0] -eq 0) { Write-Host 'RESULT: delayed HDMI DE did not reach video_crtl.' }
+elseif ($high[1] -eq 0 -or $high[2] -eq 0) { Write-Host 'RESULT: video_crtl did not produce DE/VS.' }
+elseif ($high[3] -eq 0) { Write-Host 'RESULT: video path ran but no complete frame was reported.' }
+elseif ($high[4] -eq 0 -or $high[6] -eq 0) { Write-Host 'RESULT: frame completion did not reach AXIS valid/last.' }
+else { Write-Host 'RESULT: video_crtl and AXIS produced frame activity.' }

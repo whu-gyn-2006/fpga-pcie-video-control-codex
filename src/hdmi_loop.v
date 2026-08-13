@@ -92,6 +92,13 @@ reg       dbg_de_seen      /* synthesis PAP_MARK_DEBUG="true" */;
 reg       dbg_vs_seen      /* synthesis PAP_MARK_DEBUG="true" */;
 reg       dbg_rst_released /* synthesis PAP_MARK_DEBUG="true" */;
 reg       dbg_init_over    /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_r_de_seen    /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_v_de_seen    /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_v_vs_seen    /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_frame_done_seen /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_axis_valid_seen /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_axis_ready_seen /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_axis_last_seen  /* synthesis PAP_MARK_DEBUG="true" */;
 
 always @(posedge cfg_clk) begin
     if (!locked) begin
@@ -205,6 +212,21 @@ wire    [31:0]    w_frame_cfg_pcie   ;
 wire                  video_crtl_vs      ;   
 wire                  video_crtl_de      /* synthesis PAP_MARK_DEBUG="true" */; 
 wire				  dma_tx_done		 /* synthesis PAP_MARK_DEBUG="true" */;  
+
+always @(posedge pixclk_in or negedge rstn_out) begin
+    if (!rstn_out) begin
+        dbg_r_de_seen <= 1'b0;
+        dbg_v_de_seen <= 1'b0;
+        dbg_v_vs_seen <= 1'b0;
+    end else begin
+        if (r_hdmi_de_d1)
+            dbg_r_de_seen <= 1'b1;
+        if (w_video_crtl_de)
+            dbg_v_de_seen <= 1'b1;
+        if (w_video_crtl_vs)
+            dbg_v_vs_seen <= 1'b1;
+    end
+end
 video_crtl#(
 	.PPC				  ( PPC	),
     .DATA_WIDTH           ( 24  ),
@@ -436,6 +458,24 @@ wire            axis_master_tvalid_mem  /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [127:0] axis_master_tdata_mem   ;
 wire    [3:0]   axis_master_tkeep_mem   ;
 wire            axis_master_tlast_mem   /* synthesis PAP_MARK_DEBUG="true" */;
+
+always @(posedge pclk_div2 or negedge core_rst_n) begin
+    if (!core_rst_n) begin
+        dbg_frame_done_seen <= 1'b0;
+        dbg_axis_valid_seen <= 1'b0;
+        dbg_axis_ready_seen <= 1'b0;
+        dbg_axis_last_seen  <= 1'b0;
+    end else begin
+        if (frame_done)
+            dbg_frame_done_seen <= 1'b1;
+        if (axis_master_tvalid_mem)
+            dbg_axis_valid_seen <= 1'b1;
+        if (axis_master_tready_mem)
+            dbg_axis_ready_seen <= 1'b1;
+        if (axis_master_tlast_mem)
+            dbg_axis_last_seen <= 1'b1;
+    end
+end
 wire    [7:0]   axis_master_tuser_mem   ;
 
 wire            cross_4kb_boundary      ;

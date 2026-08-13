@@ -820,6 +820,7 @@ created only after the working video baseline is restored.
 首帧/视频数据路径问题 rather than the previously observed timing violation.
 # 2026-08-13 HDMI input-boundary diagnostic
 
+- First hardware capture passed the input boundary: MS7200 initialized, pixel clock active, and DE/VS seen. Replaced the probe with a focused 7-bit second-stage probe for delayed DE, `video_crtl` DE/VS, frame completion, and AXIS valid/ready/last. All pulse observations are sticky registers captured in their native clock domains.
 - Device Map initially stopped because flattened combinational nets `rstn_out` and `init_over` could not be resolved by Inserter. Replaced those two FIC channels with preserved `cfg_clk` registers `dbg_rst_released` and `dbg_init_over`; diagnostic meaning is unchanged.
 - Static comparison confirmed `ms7200_ctl.v`, the active MS7200 initialization table, and `src/hdmi_loop.fdc` are byte-identical to the known-good pure PCIe project.
 - The previous 14-bit first-frame capture proved DMA start asserted while raw `de_in` and `vs_in` remained low for all 1024 samples.
