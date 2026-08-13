@@ -18,8 +18,19 @@ at a time. A Debugger FIC must match the programmed bitstream; applying a FIC
 from a different netlist can produce misleading observations and must be
 avoided.
 
+## 2026-08-13 14:12: first-frame probe narrowed
+
+The board still reports `0x20260801`, so the previously prepared non-gating
+source has not yet been flashed. PCIe remains Gen2 x2 and BAR0 remains healthy;
+the missing frame is still an FPGA frame-generation failure.
+
+The Debugger scope is now deliberately limited to 14 bits and four boundaries:
+raw HDMI DE/VS, delayed HDMI DE/VS, `video_crtl` DE/VS, then frame completion
+and PCIe AXIS valid/ready/last. It excludes PIO buses, pixel data, and unrelated
+PCIe internals. This is sufficient to classify the first-frame failure without
+adding a large debug core that could change timing.
+
 The current timing comparison also showed that extra `sys_clk` and
 `pixclk_in` constraints changed the implementation result and introduced a
 `pixclk_in` reset-path violation. Constraint changes therefore belong in the
 same timestamped version record as RTL changes.
-

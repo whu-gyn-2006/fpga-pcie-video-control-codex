@@ -17,3 +17,20 @@
 
 This entry describes the source baseline. It does not claim that this copied
 baseline has been flashed after the latest source edits.
+
+## `codex-control-nongating-20260813-140459`
+
+- Timestamp: `2026-08-13 14:04:59 +08:00`
+- `REG_VERSION` changed to `0x20260813` as a board-side bitstream fingerprint.
+- `REG_CAPTURE_CTRL` is retained as a readable/writable shadow register, but
+  no longer gates the legacy PCIe DMA start path.
+- The legacy BAR0 commands `0xffffffe5` and `0xffffff00` remain the only
+  hardware start/stop commands, matching the known-good pure PCIe flow.
+- Removed Debugger-preservation attributes from unused preprocessor outputs so
+  the control plane does not perturb the video implementation by default.
+- Added a paired 14-bit Debugger FIC and post-synthesis Inserter recipe:
+  `synthesize/hdmi_loop_syn_20260813_dma_debug.fic` and
+  `scripts/debugger_make_20260813_dma_fic.tcl`.
+- The FIC covers only the first-frame path: raw HDMI DE/VS, delayed DE/VS,
+  video_crtl DE/VS, legacy start, VS reset, frame done/index, and PCIe AXIS
+  valid/ready/last. It must only be used with the matching ADF.

@@ -13,12 +13,12 @@ module	pio_crtl
 	output	[63:0]			o_ch0_base_addr2    /* synthesis PAP_MARK_DEBUG="true" */,
 	output	[63:0]			o_ch0_base_addr3	/* synthesis PAP_MARK_DEBUG="true" */,
 	output	[63:0]			o_ch0_base_addr4	/* synthesis PAP_MARK_DEBUG="true" */,
-	output  [31:0]          o_preproc_mode     /* synthesis PAP_MARK_DEBUG="true" */,
-	output  [31:0]          o_threshold        /* synthesis PAP_MARK_DEBUG="true" */,
-	output  [31:0]          o_roi_xy           /* synthesis PAP_MARK_DEBUG="true" */,
-	output  [31:0]          o_roi_wh           /* synthesis PAP_MARK_DEBUG="true" */,
-	output  [31:0]          o_debug_trig       /* synthesis PAP_MARK_DEBUG="true" */,
-	output  [31:0]          o_frame_cfg        /* synthesis PAP_MARK_DEBUG="true" */,
+	output  [31:0]          o_preproc_mode,
+	output  [31:0]          o_threshold,
+	output  [31:0]          o_roi_xy,
+	output  [31:0]          o_roi_wh,
+	output  [31:0]          o_debug_trig,
+	output  [31:0]          o_frame_cfg,
     input                   i_wr_frame_done     /* synthesis PAP_MARK_DEBUG="true" */,
     input   [1:0]           i_wr_index          /* synthesis PAP_MARK_DEBUG="true" */,
 	//
@@ -63,6 +63,7 @@ reg				r_set_dma_config_en     ;
 reg		[31:0]  r_pio_rd_data           ;
 reg             r_wr_frame_done         ;
 reg     [31:0]  r_scratch               ;
+reg     [31:0]  r_capture_ctrl          ;
 reg     [31:0]  r_preproc_mode          ;
 reg     [31:0]  r_threshold             ;
 reg     [31:0]  r_roi_xy                ;
@@ -83,8 +84,6 @@ always@(posedge pcie_clk)	begin
 		r_start_flag	<=	1'd1	;
 	else	if(pio_wr_en && pio_wr_addr == 0 && pio_wr_data == 32'hffffff00)	//关闭
 		r_start_flag	<=	1'd0	;
-    else    if(pio_wr_en && pio_wr_addr == REG_CAPTURE_CTRL)
-        r_start_flag    <=    pio_wr_data[0]    ;
 	else
 		r_start_flag	<=	r_start_flag	;
 end
@@ -93,6 +92,7 @@ end
 always@(posedge pcie_clk)	begin
 	if(!rst_n)	begin
         r_scratch          <=    32'd0    ;
+        r_capture_ctrl    <=    32'd0    ;
         r_preproc_mode     <=    32'd0    ;
         r_threshold        <=    32'd0    ;
         r_roi_xy           <=    32'd0    ;
@@ -104,6 +104,7 @@ always@(posedge pcie_clk)	begin
 	else	if(pio_wr_en)	begin
         case(pio_wr_addr)
             REG_SCRATCH      :    r_scratch      <=    pio_wr_data    ;
+            REG_CAPTURE_CTRL :    r_capture_ctrl <=    pio_wr_data    ;
             REG_PREPROC_MODE :    r_preproc_mode <=    pio_wr_data    ;
             REG_THRESHOLD    :    r_threshold    <=    pio_wr_data    ;
             REG_ROI_XY       :    r_roi_xy       <=    pio_wr_data    ;
@@ -234,9 +235,9 @@ always@(posedge pcie_clk)	begin
     else    if(pio_rd_en)    begin
         case(pio_rd_addr)
             REG_MAGIC        :    r_pio_rd_data    <=    32'h46504331;
-            REG_VERSION      :    r_pio_rd_data    <=    32'h20260801;
+            REG_VERSION      :    r_pio_rd_data    <=    32'h20260813;
             REG_SCRATCH      :    r_pio_rd_data    <=    r_scratch;
-            REG_CAPTURE_CTRL :    r_pio_rd_data    <=    {31'd0,r_start_flag};
+            REG_CAPTURE_CTRL :    r_pio_rd_data    <=    {31'd0,r_capture_ctrl[0]};
             REG_PREPROC_MODE :    r_pio_rd_data    <=    r_preproc_mode;
             REG_THRESHOLD    :    r_pio_rd_data    <=    r_threshold;
             REG_ROI_XY       :    r_pio_rd_data    <=    r_roi_xy;

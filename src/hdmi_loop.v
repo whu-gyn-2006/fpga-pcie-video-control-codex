@@ -33,9 +33,9 @@ module hdmi_loop(
     output                      iic_tx_scl      ,
     inout                       iic_tx_sda      , 
     input                       pixclk_in       ,                            
-    input                       vs_in           , 
+    input                       vs_in           /* synthesis PAP_MARK_DEBUG="true" */, 
     input                       hs_in           /* synthesis PAP_MARK_DEBUG="true" */, 
-    input                       de_in           ,
+    input                       de_in           /* synthesis PAP_MARK_DEBUG="true" */,
     input     [7:0]             r_in            , 
     input     [7:0]             g_in            , 
     input     [7:0]             b_in            ,  
@@ -107,9 +107,9 @@ assign rstn_out = (rstn_1ms == 16'h2710);
 reg    [23:0]    r_hdmi_data_d0    ;
 reg    [23:0]    r_hdmi_data_d1    ;
 reg              r_hdmi_de_d0      ;
-reg              r_hdmi_de_d1      ;
+reg              r_hdmi_de_d1      /* synthesis PAP_MARK_DEBUG="true" */;
 reg              r_hdmi_vs_d0      ;
-reg              r_hdmi_vs_d1      ;
+reg              r_hdmi_vs_d1      /* synthesis PAP_MARK_DEBUG="true" */;
 
 always@(posedge pixclk_in)    begin
 
@@ -156,7 +156,7 @@ parameter	IMG_SIZE	=	IMG_WIDTH*IMG_HEIGHT*PIXCEL_BYTES;
 parameter	SEND_TIMES	=	IMG_SIZE/DMA_LEN	;
 
 wire              w_video_crtl_de    /* synthesis PAP_MARK_DEBUG="true" */;
-wire              w_video_crtl_vs    ;
+wire              w_video_crtl_vs    /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [23:0]    w_video_crtl_data  /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [15:0]    rgb_565_data       ;
 wire              w_start_flag       /* synthesis PAP_MARK_DEBUG="true" */;
@@ -400,11 +400,11 @@ wire            cfg_axis_slave0_tlast   ;
 wire            cfg_axis_slave0_tuser   ;
 
 //for mux
-wire            axis_master_tready_mem  ;
-wire            axis_master_tvalid_mem  ;
+wire            axis_master_tready_mem  /* synthesis PAP_MARK_DEBUG="true" */;
+wire            axis_master_tvalid_mem  /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [127:0] axis_master_tdata_mem   ;
 wire    [3:0]   axis_master_tkeep_mem   ;
-wire            axis_master_tlast_mem   ;
+wire            axis_master_tlast_mem   /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [7:0]   axis_master_tuser_mem   ;
 
 wire            cross_4kb_boundary      ;
