@@ -34,3 +34,24 @@ The current timing comparison also showed that extra `sys_clk` and
 `pixclk_in` constraints changed the implementation result and introduced a
 `pixclk_in` reset-path violation. Constraint changes therefore belong in the
 same timestamped version record as RTL changes.
+
+## 2026-08-13: invalid Debugger evidence is a process failure
+
+The first lightweight BAR0 baseline FIC observed top-level
+`r_line_req_d0/d1/d2`. Their source, `r_line_reg`, was declared but never
+assigned. The real DMA implementation was inside `u_pcie_tx_fun`, with a
+different `r_line_req` and PCIe-domain synchronization chain. Treating the
+top-level constant zeros as evidence about the active path was incorrect.
+
+The first parser compounded the error: it converted `$BitOffset / 8` to
+`[int]`, which rounds under Windows PowerShell. Packed samples crossing byte
+boundaries were decoded at the wrong byte and made stable level signals appear
+to toggle 256 times. Integer shifts and masks are required for packed-bit
+indices.
+
+This class of mistake must not consume another hardware iteration. Before a
+FIC is delivered, every channel must have a documented driver, active path,
+exact synthesized-netlist match, correct clock domain, and parser test vector.
+Any impossible decoded behavior is a parser or probe-integrity alarm, not a
+hardware finding. A failed check invalidates the conclusion and blocks rebuild
+instructions until corrected.

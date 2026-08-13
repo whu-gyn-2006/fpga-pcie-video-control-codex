@@ -852,3 +852,12 @@ created only after the working video baseline is restored.
 - Corrected the PowerShell packed-wave parser to use integer floor indexing; the former division-to-`[int]` conversion rounded byte indices and produced false toggles.
 - Added the 11-bit `hdmi_loop_syn_20260813_real_first_frame.fic`, registered it in `hdmi_loop.pds`, and added matching capture/parser scripts. It observes only the active path: video DE/VS, pixel-domain synchronized start, `u_pcie_tx_fun/r_line_req`, its three PCIe-domain synchronization stages, DMA request/readiness, and DMA completion.
 - Every new probe name was checked against the current `hdmi_loop_syn.vm`. Signals optimized out of the netlist were removed before delivery.
+# 2026-08-13 mandatory Debugger evidence integrity rule
+
+- Recorded the erroneous use of undriven top-level line-request probes and the
+  packed-wave byte-index rounding bug as a process failure, not a hardware
+  result.
+- Added permanent prevention rules: active-path driver tracing,
+  post-synthesis name checks, FIC/parser consistency, synthetic parser tests,
+  and sanity rejection of physically implausible waveforms are mandatory
+  before another rebuild.
