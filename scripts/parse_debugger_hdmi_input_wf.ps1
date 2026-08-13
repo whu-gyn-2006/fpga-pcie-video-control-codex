@@ -1,63 +1,28 @@
-param(
-    [string]$Path = "data.wf"
-)
-
+param([string]$Path = "data.wf")
 $ErrorActionPreference = "Stop"
-$bytes = [System.IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $Path))
-$ficWidth = 7
-$rawWidth = $ficWidth + 1
-$totalBits = [UInt64]($bytes.Length * 8)
-if (($totalBits % [UInt64]$rawWidth) -ne 0) {
-    throw "Unexpected waveform size $($bytes.Length); expected packed $rawWidth-bit records."
-}
-$sampleCount = [int]($totalBits / [UInt64]$rawWidth)
-
-function Get-RawBit([UInt64]$bit) {
-    $byteIndex = [int][Math]::Floor([double]$bit / 8.0)
-    $bitIndex = [int]($bit % 8)
-    return (($bytes[$byteIndex] -shr $bitIndex) -band 1)
-}
-
-function Get-Channel([int]$sample, [int]$channel) {
-    $start = [UInt64]$sample * [UInt64]$rawWidth
-    return Get-RawBit ($start + [UInt64](1 + $channel))
-}
-
-function Get-Value([int]$sample, [int]$lsb, [int]$width) {
-    [UInt64]$value = 0
-    for ($bit = 0; $bit -lt $width; $bit++) {
-        $value = $value -bor ([UInt64](Get-Channel $sample ($lsb + $bit)) -shl $bit)
+$bytes = [IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $Path))
+$names = @('de_in','r_hdmi_de_d0','r_hdmi_de_d1','video_crtl_de','vs_in','r_hdmi_vs_d0','r_hdmi_vs_d1','video_crtl_vs')
+$rawWidth = 9
+$bits = [UInt64]($bytes.Length * 8)
+if (($bits % $rawWidth) -ne 0) { throw "Unexpected waveform size $($bytes.Length) for 9-bit records." }
+$samples = [int]($bits / $rawWidth)
+function Bit([UInt64]$n) { return (($bytes[[int]($n / 8)] -shr [int]($n % 8)) -band 1) }
+$high = New-Object int[] 8
+$edges = New-Object int[] 8
+$prev = New-Object int[] 8
+for ($s=0;$s -lt $samples;$s++) {
+    $base=[UInt64]$s*9
+    for($c=0;$c -lt 8;$c++) {
+        $v=Bit ($base+[UInt64](1+$c))
+        if($s -gt 0 -and $v -ne $prev[$c]){$edges[$c]++}
+        $high[$c]+=$v; $prev[$c]=$v
     }
-    return $value
 }
-
-$names = @('r_hdmi_de_d1 seen','video_crtl DE seen','video_crtl VS seen','frame_done seen','AXIS valid seen','AXIS ready seen','AXIS last seen')
-$high = New-Object int[] $ficWidth
-$states = @{}
-$commands = @{}
-$pixValues = New-Object System.Collections.Generic.HashSet[UInt64]
-$lastSample = $sampleCount - 1
-
-for ($sample = 0; $sample -lt $sampleCount; $sample++) {
-    for ($channel = 0; $channel -lt $ficWidth; $channel++) { $high[$channel] += Get-Channel $sample $channel }
-}
-
-$stateNames = @{
-    1 = "IDLE"; 2 = "CONECT"; 4 = "INIT"; 8 = "WAIT"
-    16 = "STA_RD"; 32 = "SETING"; 64 = "RD_BAK"
-}
-$stateText = ($states.GetEnumerator() | Sort-Object Name | ForEach-Object {
-    $name = if ($stateNames.ContainsKey([int]$_.Name)) { $stateNames[[int]$_.Name] } else { "UNKNOWN" }
-    "0x{0:x2}({1})={2}" -f [int]$_.Name, $name, $_.Value
-}) -join ", "
-$commandText = ($commands.GetEnumerator() | Sort-Object Name | ForEach-Object {
-    "{0}={1}" -f [int]$_.Name, $_.Value
-}) -join ", "
-
-Write-Host "Decoded $sampleCount samples, FIC=$ficWidth bits, raw=$rawWidth bits"
-for ($channel = 0; $channel -lt $ficWidth; $channel++) { Write-Host ("{0}: high={1}/{2}" -f $names[$channel],$high[$channel],$sampleCount) }
-if ($high[0] -eq 0) { Write-Host 'RESULT: delayed HDMI DE did not reach video_crtl.' }
-elseif ($high[1] -eq 0 -or $high[2] -eq 0) { Write-Host 'RESULT: video_crtl did not produce DE/VS.' }
-elseif ($high[3] -eq 0) { Write-Host 'RESULT: video path ran but no complete frame was reported.' }
-elseif ($high[4] -eq 0 -or $high[6] -eq 0) { Write-Host 'RESULT: frame completion did not reach AXIS valid/last.' }
-else { Write-Host 'RESULT: video_crtl and AXIS produced frame activity.' }
+"Decoded $samples pixel-clock samples"
+for($c=0;$c -lt 8;$c++){"{0,-18} high={1,4} edges={2,4}" -f $names[$c],$high[$c],$edges[$c]}
+if($high[0] -eq 0){'RESULT: raw DE absent in this pixel-clock capture.'}
+elseif($high[1] -eq 0 -or $high[2] -eq 0){'RESULT: DE is lost in the d0/d1 input register chain.'}
+elseif($high[3] -eq 0){'RESULT: DE reaches video_crtl input but not its output.'}
+elseif($high[4] -eq 0 -or $high[5] -eq 0 -or $high[6] -eq 0){'RESULT: VS is absent or lost in the input register chain.'}
+elseif($high[7] -eq 0){'RESULT: VS reaches video_crtl input but not its output.'}
+else{'RESULT: raw, delayed, and video_crtl DE/VS are all active in pixclk_in domain.'}
