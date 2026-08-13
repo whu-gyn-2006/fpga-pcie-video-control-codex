@@ -33,7 +33,7 @@ module hdmi_loop(
     output                      iic_tx_scl      ,
     inout                       iic_tx_sda      , 
     input                       pixclk_in       ,                            
-    input                       vs_in           /* synthesis PAP_MARK_DEBUG="true" */, 
+    input                       vs_in           /* synthesis PAP_MARK_DEBUG="true" */,
     input                       hs_in           /* synthesis PAP_MARK_DEBUG="true" */, 
     input                       de_in           /* synthesis PAP_MARK_DEBUG="true" */,
     input     [7:0]             r_in            , 
