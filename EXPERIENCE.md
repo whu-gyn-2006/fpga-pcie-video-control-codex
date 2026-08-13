@@ -56,6 +56,17 @@ Any impossible decoded behavior is a parser or probe-integrity alarm, not a
 hardware finding. A failed check invalidates the conclusion and blocks rebuild
 instructions until corrected.
 
+## 2026-08-13: pure no-BAR0 A/B result
+
+The independently built and flashed no-BAR0 branch enumerated PCIe normally,
+but the RK capture loop still remained at `ready=0` with no frame. This rules
+out treating the BAR0 extension as the sole proven root cause. Before another
+RTL change, compare this build with the exact previously successful pure image:
+PDS source/FDC, generated synthesis/implementation artifacts, SBIT/SFC, HDMI
+mode, and RK binary/driver must all be identified. A branch source match alone
+does not prove the programmed bitstream matches the historical successful
+image.
+
 ## 2026-08-13: child VM names are not flattened Inserter names
 
 Device Map failed with `Inserter-0005` for

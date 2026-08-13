@@ -869,3 +869,12 @@ created only after the working video baseline is restored.
 - Functional DMA logic is unchanged; the new ports are observation-only.
 - Status is **prepared, not Inserter-validated**. Compile/Synthesize must create
   a new ADF, then exact `dbg_tx_*` binding must pass before Device Map.
+
+# 2026-08-13 pure A/B hardware result
+
+- The no-BAR0 branch was flashed and rebooted.
+- PCIe enumerated Gen2 x2 normally, but the RK capture loop remained at
+  `ready=0` with no complete frame.
+- The BAR0 extension is therefore not yet proven to be the sole cause. Next
+  comparison must identify the exact previously successful SBIT/SFC and all
+  associated PDS/RK deployment inputs before another RTL modification.

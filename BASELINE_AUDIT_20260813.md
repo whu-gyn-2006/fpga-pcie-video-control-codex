@@ -166,3 +166,14 @@ This is an A/B isolation image, not the feature image. Do not write BAR0
 configuration registers during its first test. First test only the original RK
 legacy DMA start path and compare complete-frame display against the known-good
 pure PCIe image.
+
+## Hardware result after 2026-08-13 flash/reboot
+
+- Endpoint enumerated normally as `0755:0755`, Gen2 x2.
+- RK UI entered `Capturing PCIe Frames` after the display button was clicked.
+- The DMA loop repeatedly reported `ready=0`, with no complete frame and no
+  display output.
+- Therefore this test does not support the hypothesis that the BAR0 register
+  extension alone is the cause. It also means this branch must be compared
+  against the exact previously successful pure image at the generated SBIT/SFC
+  and RK deployment levels before changing RTL again.
