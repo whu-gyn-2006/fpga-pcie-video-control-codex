@@ -160,6 +160,15 @@ wire              w_video_crtl_vs    ;
 wire    [23:0]    w_video_crtl_data  /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [15:0]    rgb_565_data       ;
 wire              w_start_flag       /* synthesis PAP_MARK_DEBUG="true" */;
+wire    [31:0]    w_preproc_mode_unused;
+wire    [31:0]    w_threshold_unused;
+wire    [31:0]    w_roi_xy_unused;
+wire    [31:0]    w_roi_wh_unused;
+wire    [31:0]    w_debug_trig_unused;
+wire    [31:0]    w_frame_cfg_unused;
+wire    [23:0]    w_preproc_data;
+wire              w_preproc_vs;
+wire              w_preproc_de;
 wire              w_dma_rd_en        /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [127:0]   w_dma_rd_data      ;
 
@@ -181,6 +190,24 @@ video_crtl#(
     .o_video_crtl_data    ( w_video_crtl_data   ),
     .o_video_crtl_vs      ( w_video_crtl_vs     ),
     .o_video_crtl_de      ( w_video_crtl_de     )
+);
+
+video_preproc #(
+    .IMG_WIDTH  ( IMG_WIDTH ),
+    .IMG_HEIGHT ( IMG_HEIGHT )
+)u_video_preproc(
+    .i_video_clk     ( pixclk_in ),
+    .i_rst_n         ( pll_rst_n ),
+    .i_video_data    ( w_video_crtl_data ),
+    .i_video_vs      ( w_video_crtl_vs ),
+    .i_video_de      ( w_video_crtl_de ),
+    .i_preproc_mode  ( w_preproc_mode_unused ),
+    .i_threshold     ( w_threshold_unused ),
+    .i_roi_xy        ( w_roi_xy_unused ),
+    .i_roi_wh        ( w_roi_wh_unused ),
+    .o_video_data    ( w_preproc_data ),
+    .o_video_vs      ( w_preproc_vs ),
+    .o_video_de      ( w_preproc_de )
 );
 
 //vs复位fifo 避免错位
@@ -225,7 +252,7 @@ always@(posedge pixclk_in)    begin
     end
 end
 
-assign rgb_565_data = {w_video_crtl_data[23:19],w_video_crtl_data[15:10],w_video_crtl_data[7:3]};
+assign rgb_565_data = {w_preproc_data[23:19],w_preproc_data[15:10],w_preproc_data[7:3]};
 
 reg [15:0]		wr_cnt			/* synthesis PAP_MARK_DEBUG="true" */;
 reg	[15:0]		rd_cnt			/* synthesis PAP_MARK_DEBUG="true" */;
@@ -372,8 +399,8 @@ pcie_tx_fun#(
     .i_video_clk      ( pixclk_in          ),
     .i_video_rst_n    ( pll_rst_n        ),
     .i_video_data     ( rgb_565_data     ),
-    .i_video_vs       ( w_video_crtl_vs  ),
-    .i_video_de       ( w_video_crtl_de  ),
+    .i_video_vs       ( w_preproc_vs     ),
+    .i_video_de       ( w_preproc_de     ),
     .o_dma_rd_data    ( w_dma_rd_data    ),
     .i_dma_rd_en      ( w_dma_rd_en      )
 );
@@ -601,6 +628,12 @@ pio_crtl u_pio_crtl(
     .o_ch0_base_addr2      ( ch0_dma_base_addr2),
     .o_ch0_base_addr3      ( ch0_dma_base_addr3),
     .o_ch0_base_addr4      ( ch0_dma_base_addr4),
+    .o_preproc_mode        ( w_preproc_mode_unused),
+    .o_threshold           ( w_threshold_unused),
+    .o_roi_xy              ( w_roi_xy_unused),
+    .o_roi_wh              ( w_roi_wh_unused),
+    .o_debug_trig          ( w_debug_trig_unused),
+    .o_frame_cfg           ( w_frame_cfg_unused),
     .i_wr_frame_done       ( o_check_data[0]   ),
     .i_wr_index            ( r_wr_index_d0     ),
     .pio_wr_en             ( pio_wr_en         ),

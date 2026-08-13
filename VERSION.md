@@ -34,3 +34,16 @@ baseline has been flashed after the latest source edits.
 - The FIC covers only the first-frame path: raw HDMI DE/VS, delayed DE/VS,
   video_crtl DE/VS, legacy start, VS reset, frame done/index, and PCIe AXIS
   valid/ready/last. It must only be used with the matching ADF.
+## Stable Stage 06 - 2026-08-14
+
+This branch contains the board-verified FPGA release with:
+
+- mode 0 direct bypass
+- mode 1 gain/brightness enhancement
+- mode 2 contrast enhancement
+- BAR0 control registers at 16-byte-aligned addresses
+- unchanged legacy PCIe DMA/FIFO/start behavior
+
+Source was synchronized from the verified
+`baseline_reproduction/stage06_contrast` project. ROI/zoom is not part of this
+stable release.
