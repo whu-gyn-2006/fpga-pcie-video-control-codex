@@ -27,3 +27,18 @@ The active PDS project now references
 `synthesize/hdmi_loop_syn_20260813_dma_debug.fic` under `wgt_my_fic_src`.
 Close and reopen PDS so the GUI reloads the project entry before synthesis and
 Device Map.
+
+## Hardware result, 2026-08-13 14:51 +08:00
+
+- Board fingerprint: `version=0x20260813`.
+- PCIe endpoint: Gen2 x2; BAR0 reads/writes pass.
+- Legacy start command was issued and `w_start_flag=1` for all 1024 samples.
+- `de_in`, `vs_in`, delayed HDMI DE/VS, and `video_crtl` DE/VS stayed low for
+  all 1024 samples with zero transitions.
+- `frame_done`, write index, and AXIS valid stayed inactive as a consequence.
+- AXIS ready stayed high, so the downstream PCIe path was available and was
+  waiting for frame data.
+
+Conclusion: the first frame is blocked at the HDMI input boundary, before
+`video_crtl` and PCIe DMA. The next probe must remain input-only and separate
+`pixclk_in` activity from MS7200 initialization/lock and DE/VS generation.
