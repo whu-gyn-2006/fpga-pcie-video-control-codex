@@ -22,3 +22,8 @@ Interpretation:
 - Frame_done active but AXIS valid/ready/last inactive: PCIe DMA output path is wrong.
 
 No PIO bus, pixel data bus, or unrelated PCIe internal signal is included.
+
+The active PDS project now references
+`synthesize/hdmi_loop_syn_20260813_dma_debug.fic` under `wgt_my_fic_src`.
+Close and reopen PDS so the GUI reloads the project entry before synthesis and
+Device Map.

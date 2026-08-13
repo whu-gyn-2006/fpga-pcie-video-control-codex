@@ -452,6 +452,12 @@
         (_widget wgt_map_constraint
         )
         (_widget wgt_my_fic_src
+            (_input
+                (_file "synthesize/hdmi_loop_syn_20260813_dma_debug.fic"
+                    (_format text)
+                    (_timespec "2026-08-13T14:14:28")
+                )
+            )
         )
         (_widget wgt_inserter_gui_view
             (_attribute _click_to_run (_switch ON))
