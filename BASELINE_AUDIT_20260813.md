@@ -137,6 +137,9 @@ project:
 - matching 8-bit pixel-domain FIC retained on disk but deliberately inactive
 - inactive lightweight companion FIC now uses only pure-top preserved signals:
   start, DMA done, frame done, write index, and synchronized line request
+- The user requested GUI visibility before build, so the lightweight FIC was
+  subsequently registered in `wgt_my_fic_src`. The upcoming hardware image is
+  explicitly the `BAR0 baseline + 8-bit probe` candidate.
 - ModelSim compile: Errors 0, Warnings 0
 
 This candidate requires one PDS/SBIT/SFC/flash/physical-restart test. Its first

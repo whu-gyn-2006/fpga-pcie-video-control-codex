@@ -831,6 +831,7 @@ created only after the working video baseline is restored.
 - Removed the active FIC from `wgt_my_fic_src`, so this A/B implementation is not perturbed by a newly inserted Debugger core.
 - Legacy start/stop, HDMI sampling, `video_crtl`, frame generation, DMA, and PCIe wiring remain the pure reference implementation.
 - Added an inactive, lightweight 8-bit companion FIC using only signals already preserved by the pure top: start, DMA done, frame done, write index, and the three-stage line-request synchronizer. Matching capture/parser scripts are included; no RTL or active PDS source was changed by this probe preparation.
+- User requested the companion FIC be visible in PDS before compiling. It is now registered under `wgt_my_fic_src`; this candidate is therefore identified as `BAR0 baseline + 8-bit lightweight probe`, not the no-FIC baseline.
 - Device Map initially stopped because flattened combinational nets `rstn_out` and `init_over` could not be resolved by Inserter. Replaced those two FIC channels with preserved `cfg_clk` registers `dbg_rst_released` and `dbg_init_over`; diagnostic meaning is unchanged.
 - Static comparison confirmed `ms7200_ctl.v`, the active MS7200 initialization table, and `src/hdmi_loop.fdc` are byte-identical to the known-good pure PCIe project.
 - The previous 14-bit first-frame capture proved DMA start asserted while raw `de_in` and `vs_in` remained low for all 1024 samples.

@@ -448,6 +448,12 @@
         (_widget wgt_map_constraint
         )
         (_widget wgt_my_fic_src
+            (_input
+                (_file "synthesize/hdmi_loop_syn_20260813_bar0_baseline.fic"
+                    (_format text)
+                    (_timespec "2026-08-13T16:30:00")
+                )
+            )
         )
         (_widget wgt_inserter_gui_view
             (_attribute _click_to_run (_switch ON))
