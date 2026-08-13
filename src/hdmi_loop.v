@@ -33,9 +33,9 @@ module hdmi_loop(
     output                      iic_tx_scl      ,
     inout                       iic_tx_sda      , 
     input                       pixclk_in       ,                            
-    input                       vs_in           /* synthesis PAP_MARK_DEBUG="true" */,
+    input                       vs_in           , 
     input                       hs_in           /* synthesis PAP_MARK_DEBUG="true" */, 
-    input                       de_in           /* synthesis PAP_MARK_DEBUG="true" */,
+    input                       de_in           ,
     input     [7:0]             r_in            , 
     input     [7:0]             g_in            , 
     input     [7:0]             b_in            ,  
@@ -86,44 +86,6 @@ ms72xx_ctl ms72xx_ctl(
 
 assign    led_int  =  init_over; 
 
-// Input-boundary diagnostics only. These registers do not feed the video path.
-reg [7:0] dbg_pixclk_count /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_de_seen      /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_vs_seen      /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_rst_released /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_init_over    /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_r_de_seen    /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_v_de_seen    /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_v_vs_seen    /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_frame_done_seen /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_axis_valid_seen /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_axis_ready_seen /* synthesis PAP_MARK_DEBUG="true" */;
-reg       dbg_axis_last_seen  /* synthesis PAP_MARK_DEBUG="true" */;
-
-always @(posedge cfg_clk) begin
-    if (!locked) begin
-        dbg_rst_released <= 1'b0;
-        dbg_init_over    <= 1'b0;
-    end else begin
-        dbg_rst_released <= rstn_out;
-        dbg_init_over    <= init_over;
-    end
-end
-
-always @(posedge pixclk_in or negedge rstn_out) begin
-    if (!rstn_out) begin
-        dbg_pixclk_count <= 8'd0;
-        dbg_de_seen      <= 1'b0;
-        dbg_vs_seen      <= 1'b0;
-    end else begin
-        dbg_pixclk_count <= dbg_pixclk_count + 1'b1;
-        if (de_in)
-            dbg_de_seen <= 1'b1;
-        if (vs_in)
-            dbg_vs_seen <= 1'b1;
-    end
-end
-
 always @(posedge cfg_clk)
 begin
 	if(!locked)
@@ -145,9 +107,9 @@ assign rstn_out = (rstn_1ms == 16'h2710);
 reg    [23:0]    r_hdmi_data_d0    ;
 reg    [23:0]    r_hdmi_data_d1    ;
 reg              r_hdmi_de_d0      ;
-reg              r_hdmi_de_d1      /* synthesis PAP_MARK_DEBUG="true" */;
+reg              r_hdmi_de_d1      ;
 reg              r_hdmi_vs_d0      ;
-reg              r_hdmi_vs_d1      /* synthesis PAP_MARK_DEBUG="true" */;
+reg              r_hdmi_vs_d1      ;
 
 always@(posedge pixclk_in)    begin
 
@@ -194,7 +156,7 @@ parameter	IMG_SIZE	=	IMG_WIDTH*IMG_HEIGHT*PIXCEL_BYTES;
 parameter	SEND_TIMES	=	IMG_SIZE/DMA_LEN	;
 
 wire              w_video_crtl_de    /* synthesis PAP_MARK_DEBUG="true" */;
-wire              w_video_crtl_vs    /* synthesis PAP_MARK_DEBUG="true" */;
+wire              w_video_crtl_vs    ;
 wire    [23:0]    w_video_crtl_data  /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [15:0]    rgb_565_data       ;
 wire              w_start_flag       /* synthesis PAP_MARK_DEBUG="true" */;
@@ -212,21 +174,6 @@ wire    [31:0]    w_frame_cfg_pcie   ;
 wire                  video_crtl_vs      ;   
 wire                  video_crtl_de      /* synthesis PAP_MARK_DEBUG="true" */; 
 wire				  dma_tx_done		 /* synthesis PAP_MARK_DEBUG="true" */;  
-
-always @(posedge pixclk_in or negedge rstn_out) begin
-    if (!rstn_out) begin
-        dbg_r_de_seen <= 1'b0;
-        dbg_v_de_seen <= 1'b0;
-        dbg_v_vs_seen <= 1'b0;
-    end else begin
-        if (r_hdmi_de_d1)
-            dbg_r_de_seen <= 1'b1;
-        if (w_video_crtl_de)
-            dbg_v_de_seen <= 1'b1;
-        if (w_video_crtl_vs)
-            dbg_v_vs_seen <= 1'b1;
-    end
-end
 video_crtl#(
 	.PPC				  ( PPC	),
     .DATA_WIDTH           ( 24  ),
@@ -453,29 +400,11 @@ wire            cfg_axis_slave0_tlast   ;
 wire            cfg_axis_slave0_tuser   ;
 
 //for mux
-wire            axis_master_tready_mem  /* synthesis PAP_MARK_DEBUG="true" */;
-wire            axis_master_tvalid_mem  /* synthesis PAP_MARK_DEBUG="true" */;
+wire            axis_master_tready_mem  ;
+wire            axis_master_tvalid_mem  ;
 wire    [127:0] axis_master_tdata_mem   ;
 wire    [3:0]   axis_master_tkeep_mem   ;
-wire            axis_master_tlast_mem   /* synthesis PAP_MARK_DEBUG="true" */;
-
-always @(posedge pclk_div2 or negedge core_rst_n) begin
-    if (!core_rst_n) begin
-        dbg_frame_done_seen <= 1'b0;
-        dbg_axis_valid_seen <= 1'b0;
-        dbg_axis_ready_seen <= 1'b0;
-        dbg_axis_last_seen  <= 1'b0;
-    end else begin
-        if (frame_done)
-            dbg_frame_done_seen <= 1'b1;
-        if (axis_master_tvalid_mem)
-            dbg_axis_valid_seen <= 1'b1;
-        if (axis_master_tready_mem)
-            dbg_axis_ready_seen <= 1'b1;
-        if (axis_master_tlast_mem)
-            dbg_axis_last_seen <= 1'b1;
-    end
-end
+wire            axis_master_tlast_mem   ;
 wire    [7:0]   axis_master_tuser_mem   ;
 
 wire            cross_4kb_boundary      ;

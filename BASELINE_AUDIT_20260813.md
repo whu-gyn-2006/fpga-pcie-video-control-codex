@@ -122,3 +122,21 @@ Interpretation:
   and tested against both configurations.
 
 No new PDS build is requested by this audit document itself.
+
+## Candidate prepared, 2026-08-13 16:23 +08:00
+
+The controlled BAR0-only candidate has now been applied to the active PDS
+project:
+
+- top restored from the known-good pure-PCIe/full-HDMI source
+- only six expanded-`pio_crtl` output wires and port connections added
+- declaration ordering cleaned for strict Verilog compilation; no connection or
+  behavior changed
+- `video_preproc.v` references in active PDS: 0
+- active FIC references in PDS: 0
+- matching 8-bit pixel-domain FIC retained on disk but deliberately inactive
+- ModelSim compile: Errors 0, Warnings 0
+
+This candidate requires one PDS/SBIT/SFC/flash/physical-restart test. Its first
+test must use bypass defaults and legacy start only; do not apply preprocessing
+register values before confirming complete frames.

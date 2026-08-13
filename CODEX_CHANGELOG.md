@@ -822,6 +822,14 @@ created only after the working video baseline is restored.
 
 - Second-stage hardware capture with DMA start asserted showed AXIS activity but no delayed DE/video DE/VS/frame-done sticky flags. Prepared an 8-bit `pixclk_in`-clocked waveform probe to inspect raw, d0, d1, and `video_crtl` DE/VS in one clock domain and eliminate cross-domain sticky-read ambiguity.
 - First hardware capture passed the input boundary: MS7200 initialized, pixel clock active, and DE/VS seen. Replaced the probe with a focused 7-bit second-stage probe for delayed DE, `video_crtl` DE/VS, frame completion, and AXIS valid/ready/last. All pulse observations are sticky registers captured in their native clock domains.
+
+# 2026-08-13 strict BAR0-only A/B candidate
+
+- Restored `src/hdmi_loop.v` from the known-good pure-PCIe/full-HDMI project.
+- Added only the six output wires/port connections required by the expanded aligned BAR0 `pio_crtl.v`; these outputs have no functional consumers.
+- Removed `video_preproc.v` from the active PDS source list.
+- Removed the active FIC from `wgt_my_fic_src`, so this A/B implementation is not perturbed by a newly inserted Debugger core.
+- Legacy start/stop, HDMI sampling, `video_crtl`, frame generation, DMA, and PCIe wiring remain the pure reference implementation.
 - Device Map initially stopped because flattened combinational nets `rstn_out` and `init_over` could not be resolved by Inserter. Replaced those two FIC channels with preserved `cfg_clk` registers `dbg_rst_released` and `dbg_init_over`; diagnostic meaning is unchanged.
 - Static comparison confirmed `ms7200_ctl.v`, the active MS7200 initialization table, and `src/hdmi_loop.fdc` are byte-identical to the known-good pure PCIe project.
 - The previous 14-bit first-frame capture proved DMA start asserted while raw `de_in` and `vs_in` remained low for all 1024 samples.
