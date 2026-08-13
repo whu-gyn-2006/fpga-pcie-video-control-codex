@@ -820,7 +820,9 @@ created only after the working video baseline is restored.
 首帧/视频数据路径问题 rather than the previously observed timing violation.
 # 2026-08-13 HDMI input-boundary diagnostic
 
+- Device Map initially stopped because flattened combinational nets `rstn_out` and `init_over` could not be resolved by Inserter. Replaced those two FIC channels with preserved `cfg_clk` registers `dbg_rst_released` and `dbg_init_over`; diagnostic meaning is unchanged.
 - Static comparison confirmed `ms7200_ctl.v`, the active MS7200 initialization table, and `src/hdmi_loop.fdc` are byte-identical to the known-good pure PCIe project.
 - The previous 14-bit first-frame capture proved DMA start asserted while raw `de_in` and `vs_in` remained low for all 1024 samples.
-- Added passive pixel-domain summaries and a compact 31-bit `cfg_clk` Debugger probe for RX initialization and HDMI input activity.
-- Added the matching FIC, capture script, parser, and PDS registration before requesting another hardware build.
+- Added passive pixel-domain summaries `dbg_pixclk_count`, `dbg_de_seen`, and `dbg_vs_seen`; they do not feed back into the video path.
+- Added compact 31-bit `cfg_clk` Debugger FIC `synthesize/hdmi_loop_syn_20260813_hdmi_input.fic` covering only RX reset/init FSM/frequency status and pixel/DE/VS activity.
+- Added matching capture and parser scripts under `scripts/`. The PDS project now references this FIC before the next build.

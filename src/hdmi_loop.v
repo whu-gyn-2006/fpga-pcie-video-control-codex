@@ -90,6 +90,18 @@ assign    led_int  =  init_over;
 reg [7:0] dbg_pixclk_count /* synthesis PAP_MARK_DEBUG="true" */;
 reg       dbg_de_seen      /* synthesis PAP_MARK_DEBUG="true" */;
 reg       dbg_vs_seen      /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_rst_released /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_init_over    /* synthesis PAP_MARK_DEBUG="true" */;
+
+always @(posedge cfg_clk) begin
+    if (!locked) begin
+        dbg_rst_released <= 1'b0;
+        dbg_init_over    <= 1'b0;
+    end else begin
+        dbg_rst_released <= rstn_out;
+        dbg_init_over    <= init_over;
+    end
+end
 
 always @(posedge pixclk_in or negedge rstn_out) begin
     if (!rstn_out) begin
