@@ -838,3 +838,10 @@ created only after the working video baseline is restored.
 - Added passive pixel-domain summaries `dbg_pixclk_count`, `dbg_de_seen`, and `dbg_vs_seen`; they do not feed back into the video path.
 - Added compact 31-bit `cfg_clk` Debugger FIC `synthesize/hdmi_loop_syn_20260813_hdmi_input.fic` covering only RX reset/init FSM/frequency status and pixel/DE/VS activity.
 - Added matching capture and parser scripts under `scripts/`. The PDS project now references this FIC before the next build.
+# 2026-08-13 PDS GUI input completeness audit
+
+- Rechecked the active candidate against its `hdmi_loop.pds` source list.
+- All 41 GUI-listed Verilog files exist, and every locally defined module instantiated by the candidate is supplied by a GUI-listed file.
+- `src/pcie/video_preproc.v` is intentionally excluded in this strict baseline because `hdmi_loop.v` does not instantiate it.
+- The lightweight 8-bit `hdmi_loop_syn_20260813_bar0_baseline.fic` is registered under `wgt_my_fic_src`; its width matches its eight channels and it targets the current `hdmi_loop_syn.adf`.
+- Added `scripts/validate_pds_gui_inputs.ps1` as a mandatory pre-build check. It fails on missing PDS inputs, instantiated modules omitted from the GUI list, multiple FIC files, or malformed FIC width/input settings.
