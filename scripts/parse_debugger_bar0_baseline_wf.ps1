@@ -6,14 +6,18 @@ $rawWidth = 9
 $totalBits = [UInt64]($bytes.Length * 8)
 if (($totalBits % $rawWidth) -ne 0) { throw "Unexpected waveform size $($bytes.Length) for 9-bit records." }
 $samples = [int]($totalBits / $rawWidth)
-function Get-Bit([UInt64]$n) { return (($bytes[[int]($n / 8)] -shr [int]($n % 8)) -band 1) }
+function Get-WaveBit([UInt64]$BitOffset) {
+    $byteIndex = [int]($BitOffset -shr 3)
+    $bitIndex = [int]($BitOffset -band 7)
+    return (($bytes[$byteIndex] -shr $bitIndex) -band 1)
+}
 $high = New-Object int[] 8
 $edges = New-Object int[] 8
 $previous = New-Object int[] 8
 for ($sample = 0; $sample -lt $samples; $sample++) {
     $base = [UInt64]$sample * $rawWidth
     for ($channel = 0; $channel -lt 8; $channel++) {
-        $value = Get-Bit ($base + [UInt64](1 + $channel))
+        $value = Get-WaveBit -BitOffset ($base + [UInt64](1 + $channel))
         if ($sample -gt 0 -and $value -ne $previous[$channel]) { $edges[$channel]++ }
         $high[$channel] += $value
         $previous[$channel] = $value

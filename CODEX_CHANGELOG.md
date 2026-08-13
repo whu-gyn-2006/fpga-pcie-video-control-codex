@@ -845,3 +845,10 @@ created only after the working video baseline is restored.
 - `src/pcie/video_preproc.v` is intentionally excluded in this strict baseline because `hdmi_loop.v` does not instantiate it.
 - The lightweight 8-bit `hdmi_loop_syn_20260813_bar0_baseline.fic` is registered under `wgt_my_fic_src`; its width matches its eight channels and it targets the current `hdmi_loop_syn.adf`.
 - Added `scripts/validate_pds_gui_inputs.ps1` as a mandatory pre-build check. It fails on missing PDS inputs, instantiated modules omitted from the GUI list, multiple FIC files, or malformed FIC width/input settings.
+# 2026-08-13 real first-frame probe correction
+
+- Hardware after rebuild still enumerated as `0755:0755` Gen2 x2. BAR0 reported version `0x20260813`, legacy `start=1`, `frame_done=0`, and `wr_index=0`; the RK capture loop received zero complete frames.
+- The 8-bit baseline waveform was valid, but its three `r_line_req_d*` channels belonged to obsolete top-level logic. Their source `r_line_reg` is declared but never assigned. Those constant-zero probes therefore did not describe the active DMA path.
+- Corrected the PowerShell packed-wave parser to use integer floor indexing; the former division-to-`[int]` conversion rounded byte indices and produced false toggles.
+- Added the 11-bit `hdmi_loop_syn_20260813_real_first_frame.fic`, registered it in `hdmi_loop.pds`, and added matching capture/parser scripts. It observes only the active path: video DE/VS, pixel-domain synchronized start, `u_pcie_tx_fun/r_line_req`, its three PCIe-domain synchronization stages, DMA request/readiness, and DMA completion.
+- Every new probe name was checked against the current `hdmi_loop_syn.vm`. Signals optimized out of the netlist were removed before delivery.
