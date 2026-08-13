@@ -1,5 +1,10 @@
 # First-frame Debugger Scope
 
+> Superseded detail: the initial raw DE/VS-low result below came from sampling
+> pixel-domain signals with asynchronous `pclk_div2`. A later native pixel-domain
+> sticky capture proved MS7200 initialization, pixel clock activity, raw DE, and
+> raw VS are present. See `BRANCH_HANDOFF_20260813.md` for the current facts.
+
 Timestamp: 2026-08-13 14:12 +08:00
 
 The board currently reports PCIe Gen2 x2 and a healthy BAR0, but the FPGA
