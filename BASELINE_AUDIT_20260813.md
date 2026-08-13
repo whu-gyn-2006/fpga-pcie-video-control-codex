@@ -135,6 +135,8 @@ project:
 - `video_preproc.v` references in active PDS: 0
 - active FIC references in PDS: 0
 - matching 8-bit pixel-domain FIC retained on disk but deliberately inactive
+- inactive lightweight companion FIC now uses only pure-top preserved signals:
+  start, DMA done, frame done, write index, and synchronized line request
 - ModelSim compile: Errors 0, Warnings 0
 
 This candidate requires one PDS/SBIT/SFC/flash/physical-restart test. Its first
