@@ -162,19 +162,6 @@ wire    [15:0]    rgb_565_data       ;
 wire              w_start_flag       /* synthesis PAP_MARK_DEBUG="true" */;
 wire              w_dma_rd_en        /* synthesis PAP_MARK_DEBUG="true" */;
 wire    [127:0]   w_dma_rd_data      ;
-wire              pclk_div2          ;
-wire              core_rst_n         ;
-wire    [31:0]    w_preproc_mode_pcie;
-wire    [31:0]    w_threshold_pcie   ;
-wire    [31:0]    w_roi_xy_pcie      ;
-wire    [31:0]    w_roi_wh_pcie      ;
-wire    [31:0]    w_debug_trig_pcie  ;
-wire    [31:0]    w_frame_cfg_pcie   ;
-wire              dbg_tx_start_pix_sync /* synthesis PAP_MARK_DEBUG="true" */;
-wire              dbg_tx_line_req_pix   /* synthesis PAP_MARK_DEBUG="true" */;
-wire              dbg_tx_line_req_d0    /* synthesis PAP_MARK_DEBUG="true" */;
-wire              dbg_tx_line_req_d1    /* synthesis PAP_MARK_DEBUG="true" */;
-wire              dbg_tx_line_req_d2    /* synthesis PAP_MARK_DEBUG="true" */;
 
 wire                  video_crtl_vs      ;   
 wire                  video_crtl_de      /* synthesis PAP_MARK_DEBUG="true" */; 
@@ -267,6 +254,7 @@ reg    [63:0]   video_ch0_base_addr/* synthesis PAP_MARK_DEBUG="true" */;
 reg    [1:0]    r_wr_index         /* synthesis PAP_MARK_DEBUG="true" */;
 reg    [1:0]    r_wr_index_d0      /* synthesis PAP_MARK_DEBUG="true" */;
 wire            dma_cmd_rdy        ;
+wire            dma_tx_done        ;
 wire   [9:0]    video_dma_len      ; 
 wire            set_dma_config_en  ;
 wire   [63:0]   ch0_dma_base_addr  ;
@@ -387,12 +375,7 @@ pcie_tx_fun#(
     .i_video_vs       ( w_video_crtl_vs  ),
     .i_video_de       ( w_video_crtl_de  ),
     .o_dma_rd_data    ( w_dma_rd_data    ),
-	.i_dma_rd_en      ( w_dma_rd_en      ),
-    .o_dbg_start_pix_sync   ( dbg_tx_start_pix_sync ),
-    .o_dbg_line_req_pix     ( dbg_tx_line_req_pix   ),
-    .o_dbg_line_req_pcie_d0 ( dbg_tx_line_req_d0    ),
-    .o_dbg_line_req_pcie_d1 ( dbg_tx_line_req_d1    ),
-    .o_dbg_line_req_pcie_d2 ( dbg_tx_line_req_d2    )
+    .i_dma_rd_en      ( w_dma_rd_en      )
 );
 
 
@@ -431,8 +414,10 @@ wire            s_pclk_div2_rstn        ;
 
 //********************** internal signal
 //clk and rst
+wire            pclk_div2               ;
 wire            pclk                    ;
 wire            ref_clk                 ;
+wire            core_rst_n              ;
 //AXIS master interface
 wire            axis_master_tvalid      ;
 wire            axis_master_tready      ;
@@ -616,12 +601,6 @@ pio_crtl u_pio_crtl(
     .o_ch0_base_addr2      ( ch0_dma_base_addr2),
     .o_ch0_base_addr3      ( ch0_dma_base_addr3),
     .o_ch0_base_addr4      ( ch0_dma_base_addr4),
-    .o_preproc_mode        ( w_preproc_mode_pcie),
-    .o_threshold           ( w_threshold_pcie   ),
-    .o_roi_xy              ( w_roi_xy_pcie      ),
-    .o_roi_wh              ( w_roi_wh_pcie      ),
-    .o_debug_trig          ( w_debug_trig_pcie  ),
-    .o_frame_cfg           ( w_frame_cfg_pcie   ),
     .i_wr_frame_done       ( o_check_data[0]   ),
     .i_wr_index            ( r_wr_index_d0     ),
     .pio_wr_en             ( pio_wr_en         ),

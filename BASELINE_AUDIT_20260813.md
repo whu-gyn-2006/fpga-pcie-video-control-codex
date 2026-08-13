@@ -145,3 +145,24 @@ project:
 This candidate requires one PDS/SBIT/SFC/flash/physical-restart test. Its first
 test must use bypass defaults and legacy start only; do not apply preprocessing
 register values before confirming complete frames.
+# Pure PCIe A/B baseline branch
+
+Branch: `baseline/pure-pcie-no-bar0-20260813`
+
+Purpose: isolate whether the BAR0 control-plane extension is responsible for
+the missing first frame. This branch restores the known-good pure PCIe HDMI
+chain and removes the BAR0 register extension, preprocessing path, and active
+Debugger FIC from the PDS GUI project.
+
+Static checks:
+
+- `src/hdmi_loop.v` matches the pure reference project.
+- `src/pcie/pio_crtl.v` matches the pure reference project.
+- PDS GUI Verilog inputs: 41; all exist and pass module dependency checking.
+- PDS GUI FIC inputs: 0.
+- `video_preproc.v` is not instantiated or listed.
+
+This is an A/B isolation image, not the feature image. Do not write BAR0
+configuration registers during its first test. First test only the original RK
+legacy DMA start path and compare complete-frame display against the known-good
+pure PCIe image.
