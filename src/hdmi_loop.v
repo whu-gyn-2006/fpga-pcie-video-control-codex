@@ -86,6 +86,25 @@ ms72xx_ctl ms72xx_ctl(
 
 assign    led_int  =  init_over; 
 
+// Input-boundary diagnostics only. These registers do not feed the video path.
+reg [7:0] dbg_pixclk_count /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_de_seen      /* synthesis PAP_MARK_DEBUG="true" */;
+reg       dbg_vs_seen      /* synthesis PAP_MARK_DEBUG="true" */;
+
+always @(posedge pixclk_in or negedge rstn_out) begin
+    if (!rstn_out) begin
+        dbg_pixclk_count <= 8'd0;
+        dbg_de_seen      <= 1'b0;
+        dbg_vs_seen      <= 1'b0;
+    end else begin
+        dbg_pixclk_count <= dbg_pixclk_count + 1'b1;
+        if (de_in)
+            dbg_de_seen <= 1'b1;
+        if (vs_in)
+            dbg_vs_seen <= 1'b1;
+    end
+end
+
 always @(posedge cfg_clk)
 begin
 	if(!locked)

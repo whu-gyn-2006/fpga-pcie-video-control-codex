@@ -818,3 +818,9 @@ For the same baseline test, the PDS `wgt_my_fic_src` entry was removed so the
 next bitstream has no stale PIO Debugger core. A matching Debugger FIC will be
 created only after the working video baseline is restored.
 首帧/视频数据路径问题 rather than the previously observed timing violation.
+# 2026-08-13 HDMI input-boundary diagnostic
+
+- Static comparison confirmed `ms7200_ctl.v`, the active MS7200 initialization table, and `src/hdmi_loop.fdc` are byte-identical to the known-good pure PCIe project.
+- The previous 14-bit first-frame capture proved DMA start asserted while raw `de_in` and `vs_in` remained low for all 1024 samples.
+- Added passive pixel-domain summaries and a compact 31-bit `cfg_clk` Debugger probe for RX initialization and HDMI input activity.
+- Added the matching FIC, capture script, parser, and PDS registration before requesting another hardware build.
