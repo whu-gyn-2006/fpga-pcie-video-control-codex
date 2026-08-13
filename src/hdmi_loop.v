@@ -170,6 +170,11 @@ wire    [31:0]    w_roi_xy_pcie      ;
 wire    [31:0]    w_roi_wh_pcie      ;
 wire    [31:0]    w_debug_trig_pcie  ;
 wire    [31:0]    w_frame_cfg_pcie   ;
+wire              dbg_tx_start_pix_sync /* synthesis PAP_MARK_DEBUG="true" */;
+wire              dbg_tx_line_req_pix   /* synthesis PAP_MARK_DEBUG="true" */;
+wire              dbg_tx_line_req_d0    /* synthesis PAP_MARK_DEBUG="true" */;
+wire              dbg_tx_line_req_d1    /* synthesis PAP_MARK_DEBUG="true" */;
+wire              dbg_tx_line_req_d2    /* synthesis PAP_MARK_DEBUG="true" */;
 
 wire                  video_crtl_vs      ;   
 wire                  video_crtl_de      /* synthesis PAP_MARK_DEBUG="true" */; 
@@ -382,7 +387,12 @@ pcie_tx_fun#(
     .i_video_vs       ( w_video_crtl_vs  ),
     .i_video_de       ( w_video_crtl_de  ),
     .o_dma_rd_data    ( w_dma_rd_data    ),
-    .i_dma_rd_en      ( w_dma_rd_en      )
+	.i_dma_rd_en      ( w_dma_rd_en      ),
+    .o_dbg_start_pix_sync   ( dbg_tx_start_pix_sync ),
+    .o_dbg_line_req_pix     ( dbg_tx_line_req_pix   ),
+    .o_dbg_line_req_pcie_d0 ( dbg_tx_line_req_d0    ),
+    .o_dbg_line_req_pcie_d1 ( dbg_tx_line_req_d1    ),
+    .o_dbg_line_req_pcie_d2 ( dbg_tx_line_req_d2    )
 );
 
 

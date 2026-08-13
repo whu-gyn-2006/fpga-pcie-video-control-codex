@@ -55,3 +55,17 @@ exact synthesized-netlist match, correct clock domain, and parser test vector.
 Any impossible decoded behavior is a parser or probe-integrity alarm, not a
 hardware finding. A failed check invalidates the conclusion and blocks rebuild
 instructions until corrected.
+
+## 2026-08-13: child VM names are not flattened Inserter names
+
+Device Map failed with `Inserter-0005` for
+`u_pcie_tx_fun/r_video_start_tx_flag_d1`. The leaf register existed in the
+synthesized child module, but the hierarchical FIC path did not exist after
+netlist flattening. Searching a `.vm` for a leaf name was therefore an
+insufficient validation and must not be reported as an Inserter-ready result.
+
+The robust pattern is explicit observability: export required internal states
+through debug-only module outputs, connect them to top-level
+`PAP_MARK_DEBUG` wires, and probe those stable top-level names. After adding
+those wires, rerun synthesis and validate the new ADF before Device Map. An
+ADF produced before the debug outputs were added cannot validate them.

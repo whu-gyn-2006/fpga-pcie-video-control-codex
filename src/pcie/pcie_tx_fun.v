@@ -45,7 +45,12 @@ module	pcie_tx_fun
 
 	//pcie_data
 	output	[PCIE_DATA_WIDTH-1:0]		o_dma_rd_data		,
-	input								i_dma_rd_en			
+	input								i_dma_rd_en		,
+	output                              o_dbg_start_pix_sync,
+	output                              o_dbg_line_req_pix,
+	output                              o_dbg_line_req_pcie_d0,
+	output                              o_dbg_line_req_pcie_d1,
+	output                              o_dbg_line_req_pcie_d2
 
 );
 //***************parameter*************************************
@@ -98,6 +103,11 @@ reg							r_pcie_vs_rst_d1			;
 //********************************assign*************************************
 assign	w_wr_fifo_rst	=	r_video_start_tx_flag_d1	;
 assign	w_rd_fifo_rst	=	i_start_tx_flag				;
+assign  o_dbg_start_pix_sync  = r_video_start_tx_flag_d1;
+assign  o_dbg_line_req_pix    = r_line_req;
+assign  o_dbg_line_req_pcie_d0 = r_pci_line_req_d0;
+assign  o_dbg_line_req_pcie_d1 = r_pci_line_req_d1;
+assign  o_dbg_line_req_pcie_d2 = r_pci_line_req_d2;
 //********************************always*************************************
 //video_clk时钟下打拍
 always@(posedge i_video_clk)	begin
@@ -356,7 +366,6 @@ video_buffer video_buffer_inst (
 
 
 endmodule
-
 
 
 

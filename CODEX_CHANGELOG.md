@@ -861,3 +861,11 @@ created only after the working video baseline is restored.
   post-synthesis name checks, FIC/parser consistency, synthetic parser tests,
   and sanity rejection of physically implausible waveforms are mandatory
   before another rebuild.
+# 2026-08-13 Device Map failure correction, prepared
+
+- Device Map rejected the hierarchical child-net probe with `Inserter-0005`.
+- Replaced all five unverified `u_pcie_tx_fun/...` FIC paths with explicit
+  debug-only outputs connected to retained top-level `dbg_tx_*` wires.
+- Functional DMA logic is unchanged; the new ports are observation-only.
+- Status is **prepared, not Inserter-validated**. Compile/Synthesize must create
+  a new ADF, then exact `dbg_tx_*` binding must pass before Device Map.
